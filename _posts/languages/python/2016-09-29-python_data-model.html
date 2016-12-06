@@ -1,0 +1,358 @@
+---
+title: Python Data Model
+layout: page
+permalink:  /languages/python/2016/09/29/data-model.html
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>data-model</title>
+<!-- 2016-09-29 四 17:16 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css"
+    href="/css/htmlize.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/bigblow.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/hideshow.css"/>
+
+
+<script type="text/javascript"
+    src="/js/jquery-1.11.0.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery-ui-1.10.2.min.js"></script>
+
+
+<script type="text/javascript"
+    src="/js/jquery.localscroll-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.zclip.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/bigblow.js"></script>
+
+<script type="text/javascript"
+    src="/js/hideshow.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. 数据模型</a>
+<ul>
+<li><a href="#sec-1-1">1.1. 对象、变量和类型</a></li>
+<li><a href="#sec-1-2">1.2. 标准类型的层次结构</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> 数据模型</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> 对象、变量和类型</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+对象是 Py 中对数据的抽象，所有数据在 Py 中都是对象，或者和对象有关系。(In a sense, and in conformance to Von Neumann’s model of a “stored program computer,” code is also represented by objects.)
+</p>
+
+<p>
+所有对象都有"identify"(不知道怎么翻译，身份？)，一个类型和一个值。对象创建之后便不能做修改；你可以认为它将对象地址保存在了内存中。
+关键字“is” 操作符对比两个对象“身份”是否一致。
+内置函数“id()”返回一个对象身份的整数值。
+</p>
+
+<p>
+<i><b>CPython implementation detail:</b></i> 对于 CPython，id(x)返回的是保存在内存中的地址。
+</p>
+
+<p>
+一个对象类型决定了这个对象支持哪些操作并且定义了这个对象可能支持的类型。函数type()返回一个对象类型。
+比如它的“身份”，对象类型同样不能修改。
+</p>
+
+<p>
+某些对象的值是可以改变的。那些可以改变值的对象叫做“mutable”；那些不可变的值的对象叫做“immutable”。（&#x2026;&#x2026;,
+所以，“immutablility” 的值并不是绝对不能改变得，还有更多细节需要说明）一个对象的类型决定了它的可变性；对于“实例”来说，
+数字、字符串、元祖是不可变的，列表、字典是可变的。
+</p>
+
+<p>
+对象不能被明确销毁；当它们不可用时会被当做垃圾回收。处理过程允许延迟回收到垃圾集合或者把它们都删除掉——
+it is a matter of implementation quality how garbage collection is implemented，as long as no objects are collected that are still reachable.
+</p>
+
+<p>
+<i><b>CPythong implementation detai：</b></i>  CPython 目前使用引用计数机制延迟检查垃圾回收循环链表，这个链表中
+的值多数都是很快就会被弃用（as soon as the become unreachable)，但是不能保证这个垃圾集合中没有循环引用。
+查看 “<a href="https://docs.python.org/3/library/gc.html#module-gc">gc</a>” 模块来查看更多信息以控制循环引用的垃圾集合。
+其他版本的垃圾回收处理过程和 CPython 可能是不同的(Other implementations act differently and CPython may change。)。
+</p>
+
+<p>
+注意这些使用的过程跟踪或者“调试区”（debugging facilities)中会让这些对象一直保留在正常使用的集合中。
+同样要注意在‘try&#x2026;except'声明中会保持对象存在（alive）。
+</p>
+
+<p>
+有些对象会包含引用外在资源的引用，比如打开文件、或者  windows。它会在释放资源时资源已经是 freed，
+但不能对其作出保证，这类型的对象提供了一个明确的释放外部资源的方式，通常是 “close()” 方法。
+如果想让你的程序保持健壮性，强烈建议明确 close 这类对象。
+“try&#x2026;finally” 声明以及 “with” 声明提供了方便的方式去做这些事。
+</p>
+
+<p>
+某些对象会包含其他引用；这些叫做容器。比如：元祖、列表和字典。这些引用可以是容器值的一部分。
+大多数事例中，当我们在说“容器”的值得时候，我们默认认为这些是“values”，而不是容器对象的“身份”（identities）
+总之，当我们在谈论到可变的容器时，只有默认会当做身份（identities）来解释。
+所以呢，如果一个不可变容器（like a tuple）包含了一个可变对象的引用，如果这个可变对象改变了，那么这个值也会改变。
+</p>
+
+<p>
+类型几乎可以影响所有对象的行为。甚至在某种意义上，对象身份的重要性也受到影响：对于可变对象类型，使用操作符
+计算、得到一个新的值得时候，实际上会返回一个和其中一个对象相同的类型和值（用相同类型去计算，并且返回相同类型
+的值），可与可变对象来说这是不允许的。比如，a = 1; b = 1, a and b 也许会也许不会引用同一个对象的值，
+依赖执行方式
+但是 c = []; d = []，c 和 d 会保证引用两个不同的、唯一的，新创建的空列表。(Note that c = d= [] 会将相同的对象赋值给 c 和 d)
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 标准类型的层次结构</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+下面是一个 python 内置类型的列表。扩展模块（用 C、JAVA 或者其他语言，depending on the implementation）
+可以定义额外类型。未来版本中的 Py 也许会加入类型的类型层次
+（e.g., rational numbers, efficiently stored arrays of integers, etc.）
+虽然这些通常是在标准库中提供了的。
+</p>
+
+<p>
+下面的某些类型中的描述部分包含了一个“special sttributes”的段落，这些属性提供了“访问实现”（access to the implementation)
+而通常不是用来使用的。这些定义可能会在未来修改。
+</p>
+
+<p>
+<i><b>None</b></i>
+</p>
+
+<p>
+这个类型只有一个值。只有这个对象有这个值。这个对象通过内置的名字“None” 访问，它通常用来表示
+一个值不存在时的场景，比如，一个函数返回了一个没有明确返回指定的任何东西的值。它的 boolean 值是假（否）。
+</p>
+
+<p>
+<i><b>Notimplemented</b></i>
+</p>
+
+<p>
+这个类型只有一个值。只有这个对象有这个值。这个对象通过内置的名字“NotImplemented”访问。
+数值方法和丰富的比较方法（Numeric methods and rich comparison methods）
+如果没有执行操作数的操作应该返回这个值。
+</p>
+
+<p>
+查看<a href="https://docs.python.org/3/library/numbers.html#implementing-the-arithmetic-operations">Implementing the arithmetic operations</a>获取更多细节。
+</p>
+
+<p>
+(译者注：为方便、直观的解释，这里给出一个示例来说明此返回值的用途，但不做解释了: )
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python">class plus_a:
+
+	def __init__(self, age):
+		self.age = age
+
+	def __eq__(self, other):
+		print('other in a: {}'.format(type(other.age)))
+		return NotImplemented
+
+
+class plus_b:
+
+	def __init__(self, age):
+		self.age = age
+
+	def __eq__(self, other):
+		print('other in b: {}'.format(type(other.age)))
+		return self.age == other.age
+		# return NotImplemented
+
+a = plus_a(3)
+b = plus_b(3)
+
+print(a == b) # This is True
+</pre>
+</div>
+
+<p>
+<i><b>Ellipsis</b></i>
+</p>
+
+<p>
+这个类型只有一个值。只有这个对象有这个值。这个对象通过 literal(本身？) &#x2026; 或者内置名字“Ellipsis”访问。
+BOOLEAN  为 true。
+</p>
+
+<p>
+<i><b>numbers.Number</b></i> 这句看起来太吃力了，已经不能集中注意力了，下期再会吧。
+</p>
+
+<p>
+These are created by numeric literals and returned as results by arithmetic operators and arithmetic built-in functions. Numeric objects are immutable; once created their value never changes. Python numbers are of course strongly related to mathematical numbers, but subject to the limitations of numerical representation in computers.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2016-09-29 四 17:16</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,314 @@
+---
+title: MySQL Backup （innobackupex）
+layout: page
+permalink: /db/mysql/2016-10-26-mysql_backup.html
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2016-10-26 Wed 23:04 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title></title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="CarlJohn" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css"
+    href="/css/htmlize.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/bigblow.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/hideshow.css"/>
+
+<script type="text/javascript"
+    src="/js/jquery-1.11.0.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery-ui-1.10.2.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.localscroll-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.zclip.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/bigblow.js"></script>
+
+<script type="text/javascript"
+    src="/js/hideshow.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline6">1. mysql Innodb引擎的增量备份</a>
+<ul>
+<li><a href="#orgheadline1">1.1. 问题</a></li>
+<li><a href="#orgheadline2">1.2. 其他特点</a></li>
+<li><a href="#orgheadline3">1.3. 备份</a></li>
+<li><a href="#orgheadline4">1.4. 操作过程</a></li>
+<li><a href="#orgheadline5">1.5. END</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgheadline6" class="outline-2">
+<h2 id="orgheadline6"><span class="section-number-2">1</span> mysql Innodb引擎的增量备份</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+嗨，好久不见，亲爱的 CJ 大哥哥终于又回来了，想我吗？
+今天说说 mysql 的备份。
+</p>
+</div>
+<div id="outline-container-orgheadline1" class="outline-3">
+<h3 id="orgheadline1"><span class="section-number-3">1.1</span> 问题</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+mysql 有不少存储引擎，percona 有自己的引擎，官方本身还有 myisam、innodb 等，
+以及其他比较出众的分支，也都有根据不同场景而定制的各种存储引擎。那么为什么说备份要
+先提到存储引擎呢？因为由于不同的存储引擎因为实现原理不同，它的读写过程不一样，导致备份
+的方式也要有所差别。这里有一篇文档简要的描述了一下这两种引擎的利弊 <a href="http://www.php100.com/html/webkaifa/database/Mysql/2011/0326/7789.html">MyISAM 和 InnoDB 的区别</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgheadline2" class="outline-3">
+<h3 id="orgheadline2"><span class="section-number-3">1.2</span> 其他特点</h3>
+<div class="outline-text-3" id="text-1-2">
+<ol class="org-ol">
+<li><i><b>上面链接中没有提到的是，MyISAM 并不支持事物性操作，由于文中并没有提到，所以这里单独拿出来说明下。</b></i></li>
+<li>还有一点要强调的是，MyISAM 只支持表锁，也就是说如果你要将一个表的数据拿出来单独存放的时候，如果数据</li>
+</ol>
+<p>
+够大，在你读出整张表来的时间段内，整个表就会被上锁，如果这个期间有来自客户端的写请求便会阻塞。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3"><span class="section-number-3">1.3</span> 备份</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+MyISAM 引擎不支持事物操作，相反 InnoDB 则支持，这就直接导致 InnoDB 是可以用增量的方式来备份库的，
+因为每一个写操作都会被记录日志，而增量备份的原理则是根据事物日志来执行备份的。
+</p>
+
+<p>
+对于 MyISAM 来说，只能进行完整备份。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-3">
+<h3 id="orgheadline4"><span class="section-number-3">1.4</span> 操作过程</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+我使用了 Percona 公司出的一款备份工具，现在生产环境中已经有很多很多小团队在用了。
+</p>
+
+<p>
+增量备份是基于全量备份来实现的，也就是说，你必须要先有一份全量备份作为基础备份数据，然后在这份基础
+备份数据之上做的修改做增量备份。
+</p>
+<div class="org-src-container">
+
+<pre class="src src-shell"><span style="color: #75715E;"># </span><span style="color: #75715E;">&#20840;&#37327;&#22791;&#20221;&#65292;&#35813;&#21629;&#20196;&#23558;&#22791;&#20221;&#25968;&#25454;&#20445;&#23384;&#22312; /backup/mysql/data &#30446;&#24405;&#65292;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#29992;&#26102;&#38388;&#25139;&#26469;&#21629;&#21517;</span>
+innobackupex /backup/mysql/data
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#22686;&#37327;&#22791;&#20221;&#65292;&#35813;&#21629;&#20196;&#23558;&#22791;&#20221;&#25968;&#25454;&#20445;&#23384;&#22312; /backup/mysql/data &#30446;&#24405;&#65292;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#21516;&#26679;&#20197;&#26102;&#38388;&#25139;&#26469;&#21629;&#21517;&#22791;&#20221;&#30340;&#23376;&#30446;&#24405;&#65292;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#24517;&#39035;&#21152;&#19978;&#22522;&#30784;&#20840;&#37327;&#22791;&#20221;&#30446;&#24405;</span>
+innobackupex <span style="color: #E6DB74; font-weight: bold;">\</span>
+    --incremental-basedir=/backup/mysql/data/2016-10-29_09-05-25 <span style="color: #E6DB74; font-weight: bold;">\</span>
+    --incremental /backup/mysql/data
+</pre>
+</div>
+
+<p>
+在恢复数据时，首先要将增量备份的备份数据合并到基础备份中，而在合并之前，需要执行额外的操作，
+由于在备份时有可能有将要执行但是还没执行的未提交、未回滚的操作，所以在恢复之前要先将这些，
+未执行的日志操作在备份目录执行一遍，以保证恢复数据的完整性（和数据库的数据一致）。
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-bash"><span style="color: #75715E;"># </span><span style="color: #75715E;">&#37325;&#26032;&#25191;&#34892;&#26085;&#24535;&#20013;&#35760;&#24405;&#30340;&#20107;&#29289;&#25805;&#20316;&#65292;</span>
+<span style="color: #75715E;">#               </span><span style="color: #75715E;">--apply-log &#36873;&#39033;&#30340;&#20316;&#29992;&#26159;&#23545;&#25968;&#25454;&#25191;&#34892;&#26085;&#24535;&#35760;&#24405;&#30340;&#25805;&#20316;&#65292;</span>
+<span style="color: #75715E;">#               </span><span style="color: #75715E;">--redo-only &#36873;&#39033;&#30340;&#20316;&#29992;&#26159;&#21482; &#25191;&#34892;&#26410;&#25552;&#20132;&#30340;&#25968;&#25454;&#65292;</span>
+<span style="color: #75715E;">#                                 </span><span style="color: #75715E;">&#32780;&#19981;&#25191;&#34892;&#22238;&#28378;&#25805;&#20316;</span>
+innobackupex --apply-log --redo-only BASE-DIR
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#23545;&#22686;&#37327;&#25968;&#25454;&#30446;&#24405;&#25191;&#34892;&#19968;&#36941;&#65292;&#24182;&#19988;&#21512;&#24182;&#21040;&#23436;&#25972;&#22791;&#20221;&#30340;&#25968;&#25454;&#20013;</span>
+innobackupex --apply-log --redo-only BASE-DIR <span style="color: #E6DB74; font-weight: bold;">\</span>
+             --incremental-dir=INCREMENTAL-DIR-1
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#25191;&#34892;&#20840;&#37096;&#26085;&#24535;&#25805;&#20316;</span>
+innobackupex --apply-log BASE-DIR
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#20889;&#20250;&#25968;&#25454;&#30446;&#24405;&#65292;&#27880;&#24847;&#65292;&#22312;&#26412;&#27493;&#39588;&#20013;&#65292;&#24517;&#39035;&#23558;&#25968;&#25454;&#24211;&#20572;&#27490;&#65292;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#28982;&#21518;&#8220;&#28165;&#31354;&#8221;&#25968;&#25454;&#24211;&#30340;&#25968;&#25454;&#30446;&#24405;&#65292;&#20445;&#35777;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#25968;&#25454;&#24211;&#30340;&#25968;&#25454;&#30446;&#24405;&#26159;&#31354;&#30340;&#65292;&#21542;&#21017;&#19981;&#20250;&#25191;&#34892;&#65292;</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#25110;&#32773;&#23558;&#20320;&#35201;&#24674;&#22797;&#30340;&#34920;&#25163;&#21160;&#22797;&#21046;&#22238;&#25968;&#25454;&#24211;&#30340;&#25968;&#25454;&#30446;&#24405;&#20063;&#21487;&#20197;</span>
+innobackupex --copy-back BASE-DIR
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5"><span class="section-number-3">1.5</span> END</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+以前说以后翻译 Python 官网文档，想了想这部分内容就不放在这里了，我记录到博客里就好了，大家晚安。
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: CarlJohn</p>
+<p class="date">Created: 2016-10-26 Wed 23:04</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
