@@ -1,0 +1,365 @@
+---
+layout: page
+permalink: /operations/queues/2016-12-06-rabbitmq-ha.html
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2016-12-09 Fri 22:58 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title></title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="CarlJohn" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css"
+    href="/css/htmlize.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/bigblow.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/hideshow.css"/>
+
+<script type="text/javascript"
+    src="/js/jquery-1.11.0.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery-ui-1.10.2.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.localscroll-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.zclip.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/bigblow.js"></script>
+
+<script type="text/javascript"
+    src="/js/hideshow.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline10">1. RabbitMQ Highly Availability And KeepAlived</a>
+<ul>
+<li><a href="#orgheadline1">1.1. Introduction</a></li>
+<li><a href="#orgheadline2">1.2. What's the RabbitMQ</a></li>
+<li><a href="#orgheadline8">1.3. Highly Availability in RabbitMQ</a>
+<ul>
+<li><a href="#orgheadline3">1.3.1. Unsynchronised Slaves</a></li>
+<li><a href="#orgheadline7">1.3.2. Mirroring</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline9">1.4. End</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgheadline10" class="outline-2">
+<h2 id="orgheadline10"><span class="section-number-2">1</span> RabbitMQ Highly Availability And KeepAlived</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-orgheadline1" class="outline-3">
+<h3 id="orgheadline1"><span class="section-number-3">1.1</span> Introduction</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+一个朋友说我的生活里工作占用的时间比例太大了，几乎完全没有生活，
+可能我早就被痛苦和工作、学习奴役了吧，只是无脑的为了学习而学习，谁知道呢，知道的越少越好吧，与其明白自己生活在苦难中后
+让自己更痛苦，还不如完全不理会，所谓“身在福中不知福”，那我就“身在苦中不知苦”好了。
+</p>
+
+<p>
+最近对 RabbitMQ 的高可用做了一些了解，包括 KeepAlived 的原理和配置过程，简单记录、分享一下。
+</p>
+
+<p>
+对了，标题我尝试用英文来写了，最近因为英文被一个陌生人轻轻的鄙视了一下，宝宝表示很不开心，暂时用英文写标题，以后
+大概有一天可以用英文来写正文部分了吧(这是一个美好的愿望)。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-3">
+<h3 id="orgheadline2"><span class="section-number-3">1.2</span> What's the RabbitMQ</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+简单说，当然了，我了解的也不够多，事实上我在尽力往复杂了说。
+</p>
+
+<p>
+RabbitMQ 是一个队列服务，用 Erlang 实现，大多用在对可用性要求极高的场景中。
+它有这么几个概念：exchanges、queues、channels，但事实上我没有深入了解，猜测应该和 Kfaka 的 Topic 类似吧，
+类似分组，比如每个 channel 可以有多个 queue，每个 exchange 可以有多个 channel。
+</p>
+
+<p>
+嗯，是的，介绍完了，就酱，介绍完了，不过，正题是 HA 对吗？所以还是进(tao)入(bi)主题吧。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">1.3</span> Highly Availability in RabbitMQ</h3>
+<div class="outline-text-3" id="text-1-3">
+</div><div id="outline-container-orgheadline3" class="outline-4">
+<h4 id="orgheadline3"><span class="section-number-4">1.3.1</span> Unsynchronised Slaves</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+和所有的高可用集群服务一样，当你的数据进入一个队列时，数据会被复制到其他的 Slave 节点。
+它可以在不停止服务的情况下，在线将 Slave 加入集群中，在加入集群后，它不会包含任何数据，
+当有新数据进入集群队列的时候，数据会被同步到新增的这个节点，数据一直在被消费，直到集群中
+的所有“旧数据”(新节点中不存在的数据)被消费光的时候，新节点才会和整个集群的数据保持完全同步。
+</p>
+</div>
+</div>
+<div id="outline-container-orgheadline7" class="outline-4">
+<h4 id="orgheadline7"><span class="section-number-4">1.3.2</span> Mirroring</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+这些名词真是够了，明明是一样的东西，非得叫不同的名字，比如这个 RMQ 中，它的集群关系叫“镜像”，
+把数据“镜像”到 Slave。
+</p>
+</div>
+
+<ol class="org-ol"><li><a id="orgheadline4"></a>Mirror policy<br  /><div class="outline-text-5" id="text-1-3-2-1">
+<p>
+数据镜像有几种策略：
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">ha-mode</th>
+<th scope="col" class="org-left">ha-params</th>
+<th scope="col" class="org-left">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">all</td>
+<td class="org-left">(absent)</td>
+<td class="org-left">队列会镜像到集群中的所有节点，当新节点加入进来的时候队列会被镜像到新节点(如上解释)</td>
+</tr>
+
+<tr>
+<td class="org-left">exactly</td>
+<td class="org-left">count</td>
+<td class="org-left">队列镜像到指定数量的节点中，如果集群中现有节点少于指定的节点，队列会被镜像到所有节点。否则，多余的节点会在有节点宕机时才会启用进入该集群开始同步，啊，不，开始镜像数据。</td>
+</tr>
+
+<tr>
+<td class="org-left">nodes</td>
+<td class="org-left">node names</td>
+<td class="org-left">用“实例名”来指定一个节点列表，当实例名包含在这个列表里时，数据才会镜像过来。节点名默认使用“rabbit@${HOSTNAME}，当集群中没有其他可用节点时，这些没有被包含进来的节点才会启用开始镜像数据。</td>
+</tr>
+</tbody>
+</table>
+</div></li>
+
+
+<li><a id="orgheadline5"></a>Append a node to cluster<br  /><div class="outline-text-5" id="text-1-3-2-2">
+<div class="org-src-container">
+
+<pre class="src src-shell"><span style="color: #75715E;"># </span><span style="color: #75715E;">1) master:</span>
+rabbitmqctl stop_app
+rabbitmqctl reset
+rabbitmqctl start_app
+<span style="color: #75715E;"># </span><span style="color: #75715E;">2) other node:</span>
+rabbitmqctl stop_app
+rabbitmqctl reset
+<span style="color: #75715E;"># </span><span style="color: #75715E;">&#36825;&#37324;&#30340; --ram &#21442;&#25968;&#25351;&#23450;&#20102;&#23558;&#25968;&#25454;&#20445;&#23384;&#22312;&#20869;&#23384;&#20013;&#65292;&#22914;&#26377;&#38656;&#35201;&#21487;&#20197;&#21435;&#25481;&#65292;&#40664;&#35748;&#20250;&#20889;&#21040;&#30828;&#30424;&#19978;&#12290;</span>
+rabbitmqctl join_cluster --ram rabbit@rabbitmq1
+rabbitmqctl start_app
+</pre>
+</div>
+</div></li>
+
+
+<li><a id="orgheadline6"></a>Configuration the policy<br  /><div class="outline-text-5" id="text-1-3-2-3">
+<p>
+有三种方式来配置 node 策略:
+</p>
+<ol class="org-ol">
+<li><p>
+CLI:
+</p>
+
+<p>
+rabbitmqctl set<sub>policy</sub> ha-all "<sup>ha</sup>\." '{"ha-mode":"all"}'
+</p></li>
+<li>HTTP API:
+PUT /api/policies/%2f/ha-all {"pattern":"<sup>ha</sup>\.", "definition":{"ha-mode":"all"}}</li>
+<li>Web UI:</li>
+</ol>
+</div></li></ol>
+</div>
+</div>
+<div id="outline-container-orgheadline9" class="outline-3">
+<h3 id="orgheadline9"><span class="section-number-3">1.4</span> End</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+好了，就到这里了，基本上这就是关于 RMQ 集群的核心概念了，看起来今天已经很晚了，
+我还是考虑把 KeepAlived 的内容分开放到下一篇好了。
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: CarlJohn</p>
+<p class="date">Created: 2016-12-09 Fri 22:58</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
