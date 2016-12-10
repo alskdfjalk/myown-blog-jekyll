@@ -3,14 +3,17 @@ layout: default
 ---
 
 <div class="home">
-  <h1 class="page-heading" align="right">Recent</h1>
-  <img src ="/images/cj.jpg" align="left" width="400" height="450"
+  <h1 class="page-heading" align="right">Only 5 Recent</h1>
+  <img src ="/images/cj.jpg" align="left" width="375" height="450"
        title="CJ" class="img">
   </img>
+  <!--
      这个博客工具用的是 jekyll，但是很抱歉每一个分类下的具体文章分类
-     还不知道怎么分类显示，将就着看吧看官们
+     还不知道怎么分类显示，将就着看吧看官们。
+     By the way, 目前首页仅显示七条最新的文档。
+  -->
   <ul class="post-list">
-    {% for post in site.posts limit: 10 %}
+    {% for post in site.posts limit: 5 %}
     <li align="right">
       <span class="post-meta" align="right">{{ post.date | date: "%b %-d, %Y" }}</span>
       <h2>
