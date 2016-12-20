@@ -3,7 +3,7 @@ layout: default
 ---
 
 <div class="home">
-  <h1 class="page-heading" align="right">Only 5 Recent</h1>
+	<!-- <h1 class="page-heading" align="right">Only 5 Recent</h1> -->
   <img src ="/images/cj.jpg" align="left" width="375" height="450"
        title="CJ" class="img">
   </img>
@@ -13,7 +13,7 @@ layout: default
      By the way, 目前首页仅显示七条最新的文档。
   -->
   <ul class="post-list">
-    {% for post in site.posts limit: 5 %}
+    {% for post in site.posts %}
     <li align="right">
       <span class="post-meta" align="right">{{ post.date | date: "%b %-d, %Y" }}</span>
       <h2>
